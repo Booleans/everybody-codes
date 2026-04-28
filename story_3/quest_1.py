@@ -257,6 +257,7 @@ lines = '''43940:RrrRRr GggGgG bBbbBB SSsSSS
 
 import re
 from dataclasses import dataclass, field
+from collections import Counter
 
 pattern = r'^(\d{4,5}):([rR]{6}) ([gG]{6}) ([bB]{6})(?: ([sS]{6}))?$'
 
@@ -271,6 +272,9 @@ class Scale:
     green_value: int = field(init=False)
     blue_value: int = field(init=False)
     dominant_color: str = field(init=False)
+    shiny_or_matte: str = field(init=False)
+    color_for_group: str = field(init=False)
+    group: str = field(init=False)
 
     def __post_init__(self):
         self.identifier = int(self.identifier)
@@ -282,6 +286,23 @@ class Scale:
         self.dominant_color = max((self.red_value, 'red'), 
                                   (self.green_value, 'green'), 
                                   (self.blue_value, 'blue'))[1]
+        if  self.shine_value <= 30:
+            self.shiny_or_matte = 'matte'
+        elif self.shine_value >= 33:
+            self.shiny_or_matte = 'shiny'
+        else:
+            self.shiny_or_matte = None
+
+        if not any((self.red_value == self.green_value, self.red_value == self.blue_value, self.green_value == self.blue_value)):
+            self.color_for_group = self.dominant_color
+        else:
+            self.color_for_group = None
+
+        if self.color_for_group and self.shiny_or_matte:
+            self.group = f'{self.color_for_group}-{self.shiny_or_matte}'
+        else:
+            self.group = None
+
 
 scales = []
 
@@ -297,3 +318,7 @@ max_shine = sorted_scales[0].shine_value
 # Veronica asks you to find the scales of individuals with the highest level of shine, 
 # and among them choose the darkest one (the one with the lowest total sum of colour components). 
 print(sorted_scales[0].identifier)
+
+group_counts = Counter(scale.group for scale in sorted_scales)
+most_costtom_group = 
+print(group_counts)
